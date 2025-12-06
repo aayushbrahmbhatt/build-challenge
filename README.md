@@ -8,7 +8,6 @@ This repository contains my submission for the Intuit Build Challenge.
 Multi-threaded implementation demonstrating thread synchronization, blocking queues, and concurrent programming principles.
 
 - **Language**: Python 3.7+
-- **Dependencies**: None (standard library only)
 - **Tests**: 12 unit tests, all passing ✅
 
 [View Details →](assignment-1/README.md)
@@ -17,7 +16,6 @@ Multi-threaded implementation demonstrating thread synchronization, blocking que
 Sales analysis application using pandas API, showcasing functional programming, method chaining, and data aggregation.
 
 - **Language**: Python 3.8+
-- **Dependencies**: pandas, numpy, fpdf2, pytest
 - **Tests**: 25 unit tests, all passing ✅
 
 [View Details →](assignment-2/README.md)
