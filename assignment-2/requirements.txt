@@ -1,0 +1,12 @@
+# Sales Data Analysis Application - Dependencies
+# Python 3.8+ required
+
+# Data Analysis
+pandas>=2.0.0
+numpy>=1.24.0
+
+# PDF Generation
+fpdf2>=2.7.0
+
+# Testing
+pytest>=7.0.0
