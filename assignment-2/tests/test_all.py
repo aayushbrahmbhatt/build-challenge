@@ -2,6 +2,7 @@
 Unit Tests for Sales Analysis Application
 =========================================
 Consolidated test suite covering Sale model, DataLoader, and SalesAnalyzer.
+Optimized to 6 comprehensive tests with full code coverage.
 """
 
 import unittest
@@ -20,72 +21,56 @@ from src.sales_analyzer import SalesAnalyzer
 
 
 # =============================================================================
-# SALE MODEL TESTS (5 tests)
+# SALE MODEL TESTS
 # =============================================================================
 
 class TestSaleModel(unittest.TestCase):
-    """Tests for Sale dataclass covering creation, computed properties, and immutability."""
+    """Tests for Sale dataclass covering creation, computed properties, immutability, and edge cases."""
     
-    def test_sale_creation_and_properties(self):
-        """Test Sale object creation with all computed properties."""
+    def test_sale_comprehensive(self):
+        """Test Sale creation, computed properties, immutability, equality, and edge cases."""
+        # Test creation and computed properties
         sale = Sale(
             order_id=1001, date="2024-01-15", customer_id="C001",
             customer_name="Alice", product_id="P001", product_name="Laptop",
             category="Electronics", quantity=2, unit_price=500.00,
             discount=0.10, region="North", payment_method="Credit Card"
         )
-        # Verify computed properties
-        self.assertEqual(sale.gross_amount, 1000.00)  # 2 * 500
-        self.assertEqual(sale.discount_amount, 100.00)  # 1000 * 0.10
-        self.assertEqual(sale.net_amount, 900.00)  # 1000 - 100
-
-    def test_sale_immutability(self):
-        """Test that Sale objects are immutable (frozen dataclass)."""
-        sale = Sale(
-            order_id=1001, date="2024-01-15", customer_id="C001",
-            customer_name="Alice", product_id="P001", product_name="Laptop",
-            category="Electronics", quantity=1, unit_price=100.00,
-            discount=0.0, region="North", payment_method="Cash"
-        )
+        self.assertEqual(sale.gross_amount, 1000.00)
+        self.assertEqual(sale.discount_amount, 100.00)
+        self.assertEqual(sale.net_amount, 900.00)
+        
+        # Test immutability
         with self.assertRaises(Exception):
             sale.quantity = 5
-
-    def test_sale_to_dict(self):
-        """Test Sale serialization to dictionary."""
-        sale = Sale(
-            order_id=1001, date="2024-01-15", customer_id="C001",
-            customer_name="Alice", product_id="P001", product_name="Laptop",
-            category="Electronics", quantity=1, unit_price=100.00,
-            discount=0.0, region="North", payment_method="Cash"
-        )
+        
+        # Test to_dict
         result = sale.to_dict()
         self.assertIsInstance(result, dict)
         self.assertEqual(result['order_id'], 1001)
         self.assertIn('net_amount', result)
-
-    def test_sale_equality(self):
-        """Test equality comparison between Sale objects."""
-        sale1 = Sale(1, "2024-01-01", "C1", "A", "P1", "X", "Cat", 1, 10.0, 0.0, "N", "Cash")
-        sale2 = Sale(1, "2024-01-01", "C1", "A", "P1", "X", "Cat", 1, 10.0, 0.0, "N", "Cash")
-        sale3 = Sale(2, "2024-01-01", "C1", "A", "P1", "X", "Cat", 1, 10.0, 0.0, "N", "Cash")
-        self.assertEqual(sale1, sale2)
-        self.assertNotEqual(sale1, sale3)
-
-    def test_sale_edge_cases(self):
-        """Test edge cases: zero quantity and max discount."""
+        
+        # Test equality
+        sale2 = Sale(1001, "2024-01-15", "C001", "Alice", "P001", "Laptop", 
+                     "Electronics", 2, 500.00, 0.10, "North", "Credit Card")
+        sale3 = Sale(1002, "2024-01-15", "C001", "Alice", "P001", "Laptop",
+                     "Electronics", 2, 500.00, 0.10, "North", "Credit Card")
+        self.assertEqual(sale, sale2)
+        self.assertNotEqual(sale, sale3)
+        
+        # Test edge cases
         zero_qty = Sale(1, "2024-01-01", "C1", "A", "P1", "X", "Cat", 0, 100.0, 0.0, "N", "Cash")
         self.assertEqual(zero_qty.net_amount, 0.0)
-        
         max_discount = Sale(1, "2024-01-01", "C1", "A", "P1", "X", "Cat", 1, 100.0, 1.0, "N", "Cash")
         self.assertEqual(max_discount.net_amount, 0.0)
 
 
 # =============================================================================
-# DATA LOADER TESTS (5 tests)
+# DATA LOADER TESTS
 # =============================================================================
 
 class TestDataLoader(unittest.TestCase):
-    """Tests for DataLoader covering file loading, validation, and caching."""
+    """Tests for DataLoader covering file loading, validation, error handling, and metadata."""
     
     @classmethod
     def setUpClass(cls):
@@ -103,46 +88,40 @@ class TestDataLoader(unittest.TestCase):
     def tearDownClass(cls):
         os.unlink(cls.temp_file.name)
 
-    def test_load_returns_dataframe_with_correct_structure(self):
-        """Test that load() returns DataFrame with correct columns and types."""
+    def test_dataloader_comprehensive(self):
+        """Test DataLoader load, validation, error handling, metadata, and convenience function."""
+        # Test successful load with correct structure
         loader = DataLoader(self.temp_file.name)
         df = loader.load()
-        
         self.assertIsInstance(df, pd.DataFrame)
         self.assertEqual(len(df), 2)
         self.assertTrue(pd.api.types.is_datetime64_any_dtype(df['date']))
         self.assertTrue(pd.api.types.is_integer_dtype(df['order_id']))
-
-    def test_file_not_found_error(self):
-        """Test that missing file raises FileNotFoundError."""
+        
+        # Test file not found error
         with self.assertRaises(FileNotFoundError):
             DataLoader("nonexistent.csv")
-
-    def test_invalid_path_error(self):
-        """Test that empty/None path raises ValueError."""
+        
+        # Test invalid path errors
         with self.assertRaises(ValueError):
             DataLoader("")
         with self.assertRaises(ValueError):
             DataLoader(None)
-
-    def test_get_info_returns_metadata(self):
-        """Test get_info() returns proper metadata dict."""
-        loader = DataLoader(self.temp_file.name)
-        info = loader.get_info()
         
+        # Test get_info returns metadata
+        info = loader.get_info()
         self.assertIsInstance(info, dict)
         self.assertEqual(info['record_count'], 2)
         self.assertIn('date_range', info)
-
-    def test_convenience_function(self):
-        """Test load_sales_data() convenience function."""
-        df = load_sales_data(self.temp_file.name)
-        self.assertIsInstance(df, pd.DataFrame)
-        self.assertEqual(len(df), 2)
+        
+        # Test convenience function
+        df2 = load_sales_data(self.temp_file.name)
+        self.assertIsInstance(df2, pd.DataFrame)
+        self.assertEqual(len(df2), 2)
 
 
 # =============================================================================
-# SALES ANALYZER TESTS (15 tests)
+# SALES ANALYZER TESTS
 # =============================================================================
 
 def create_test_df():
@@ -164,14 +143,13 @@ def create_test_df():
 
 
 class TestSalesAnalyzer(unittest.TestCase):
-    """Tests for SalesAnalyzer covering aggregation, groupby, filtering, and chaining."""
+    """Tests for SalesAnalyzer covering all aggregation, groupby, filtering, and analysis features."""
     
     def setUp(self):
         self.analyzer = SalesAnalyzer(create_test_df())
 
-    # --- Basic Aggregations ---
-    def test_basic_aggregations(self):
-        """Test all basic aggregation methods."""
+    def test_basic_aggregations_and_properties(self):
+        """Test all basic aggregation methods and properties."""
         # Revenue: 900 + 300 + 95 + 850 + 450 = 2595
         self.assertAlmostEqual(self.analyzer.total_revenue(), 2595.00, places=2)
         self.assertEqual(self.analyzer.total_quantity_sold(), 10)
@@ -180,129 +158,116 @@ class TestSalesAnalyzer(unittest.TestCase):
         self.assertEqual(self.analyzer.unique_products(), 4)
         self.assertAlmostEqual(self.analyzer.total_discount_given(), 305.00, places=2)
         self.assertEqual(self.analyzer.record_count, 5)
+        
+        # Test dataframe property
+        self.assertIsInstance(self.analyzer.dataframe, pd.DataFrame)
+        self.assertEqual(len(self.analyzer.dataframe), 5)
 
-    # --- GroupBy Operations ---
-    def test_revenue_by_category(self):
-        """Test revenue groupby category with sorting."""
-        result = self.analyzer.revenue_by_category()
-        self.assertIsInstance(result, pd.Series)
-        self.assertAlmostEqual(result['Electronics'], 1750.00, places=2)
-        self.assertAlmostEqual(result['Furniture'], 750.00, places=2)
-        # Verify sorted descending
-        self.assertEqual(list(result.values), sorted(result.values, reverse=True))
-
-    def test_revenue_by_region_and_payment(self):
-        """Test revenue groupby region and payment method."""
+    def test_groupby_operations(self):
+        """Test all groupby operations: category, region, payment, monthly, and statistics."""
+        # Revenue by category
+        by_cat = self.analyzer.revenue_by_category()
+        self.assertIsInstance(by_cat, pd.Series)
+        self.assertAlmostEqual(by_cat['Electronics'], 1750.00, places=2)
+        self.assertAlmostEqual(by_cat['Furniture'], 750.00, places=2)
+        self.assertEqual(list(by_cat.values), sorted(by_cat.values, reverse=True))
+        
+        # Revenue by region and payment
         by_region = self.analyzer.revenue_by_region()
         self.assertAlmostEqual(by_region['North'], 1750.00, places=2)
-        
         by_payment = self.analyzer.revenue_by_payment_method()
         self.assertAlmostEqual(by_payment['Credit Card'], 2200.00, places=2)
-
-    def test_monthly_revenue(self):
-        """Test monthly revenue aggregation."""
-        result = self.analyzer.monthly_revenue()
-        self.assertAlmostEqual(result['2024-01'], 1200.00, places=2)
-        self.assertAlmostEqual(result['2024-02'], 945.00, places=2)
-
-    def test_order_and_quantity_by_category(self):
-        """Test order count and quantity by category."""
+        
+        # Monthly revenue
+        monthly = self.analyzer.monthly_revenue()
+        self.assertAlmostEqual(monthly['2024-01'], 1200.00, places=2)
+        self.assertAlmostEqual(monthly['2024-02'], 945.00, places=2)
+        
+        # Order count and quantity by category
         orders = self.analyzer.order_count_by_category()
         self.assertEqual(orders['Electronics'], 2)
-        
         qty = self.analyzer.quantity_sold_by_category()
         self.assertEqual(qty['Office Supplies'], 5)
+        
+        # Pivot and statistics
+        pivot = self.analyzer.category_region_pivot()
+        self.assertIsInstance(pivot, pd.DataFrame)
+        self.assertIn('North', pivot.columns)
+        stats = self.analyzer.category_statistics()
+        self.assertIn('total_revenue', stats.columns)
 
-    # --- Filtering Methods ---
-    def test_filter_by_category(self):
-        """Test category filtering returns new analyzer."""
+    def test_filtering_operations(self):
+        """Test all filtering methods: category, region, date, amount, and predicate."""
+        # Filter by category
         filtered = self.analyzer.filter_by_category('Electronics')
         self.assertIsInstance(filtered, SalesAnalyzer)
         self.assertEqual(filtered.record_count, 2)
         self.assertAlmostEqual(filtered.total_revenue(), 1750.00, places=2)
-
-    def test_filter_by_region_date_and_amount(self):
-        """Test region, date range, and min amount filtering."""
+        
+        # Filter by region
         by_region = self.analyzer.filter_by_region('North')
         self.assertEqual(by_region.record_count, 2)
         
+        # Filter by date range
         by_date = self.analyzer.filter_by_date_range('2024-01-01', '2024-01-31')
         self.assertEqual(by_date.record_count, 2)
         
+        # Filter by min amount
         high_value = self.analyzer.filter_by_min_amount(400.0)
-        self.assertEqual(high_value.record_count, 3)  # 900, 850, 450
-
-    def test_filter_by_predicate_lambda(self):
-        """Test filtering with lambda predicate - key functional programming feature."""
-        # Quantity >= 2
+        self.assertEqual(high_value.record_count, 3)
+        
+        # Filter by predicate (lambda)
         bulk = self.analyzer.filter_by_predicate(lambda row: row['quantity'] >= 2)
         self.assertEqual(bulk.record_count, 2)
         
-        # Complex: Electronics with discount
+        # Complex predicate
         elec_disc = self.analyzer.filter_by_predicate(
             lambda row: (row['category'] == 'Electronics') & (row['discount'] > 0)
         )
         self.assertEqual(elec_disc.record_count, 2)
-
-    def test_empty_filter_raises_error(self):
-        """Test that filter returning no results raises ValueError."""
+        
+        # Empty filter raises error
         with self.assertRaises(ValueError):
             self.analyzer.filter_by_category('NonExistent')
 
-    # --- Method Chaining ---
-    def test_method_chaining(self):
-        """Test stream-like method chaining."""
+    def test_method_chaining_and_top_n(self):
+        """Test method chaining (stream-like) and top N operations."""
+        # Method chaining
         result = (self.analyzer
                   .filter_by_category('Electronics')
                   .filter_by_region('North')
                   .total_revenue())
         self.assertAlmostEqual(result, 1750.00, places=2)
-
-    # --- Advanced Analysis ---
-    def test_pivot_and_statistics(self):
-        """Test pivot table and category statistics."""
-        pivot = self.analyzer.category_region_pivot()
-        self.assertIsInstance(pivot, pd.DataFrame)
-        self.assertIn('North', pivot.columns)
         
-        stats = self.analyzer.category_statistics()
-        self.assertIn('total_revenue', stats.columns)
-
-    def test_top_n_methods(self):
-        """Test top N products and customers."""
+        # Top products by revenue and quantity
         top_products = self.analyzer.top_products_by_revenue(n=2)
         self.assertIsInstance(top_products, pd.DataFrame)
         self.assertLessEqual(len(top_products), 2)
         
+        top_qty = self.analyzer.top_products_by_quantity(n=2)
+        self.assertIsInstance(top_qty, pd.DataFrame)
+        
+        # Top customers
         top_customers = self.analyzer.top_customers(n=2)
         self.assertLessEqual(len(top_customers), 2)
-
-    def test_get_summary(self):
-        """Test summary dictionary contains all key metrics."""
+        
+        # Summary
         summary = self.analyzer.get_summary()
         expected_keys = ['total_revenue', 'total_quantity_sold', 'average_order_value',
                         'unique_customers', 'unique_products', 'total_discount_given']
         for key in expected_keys:
             self.assertIn(key, summary)
 
-
-# =============================================================================
-# EDGE CASES
-# =============================================================================
-
-class TestEdgeCases(unittest.TestCase):
-    """Edge case tests."""
-    
-    def test_empty_dataframe_raises_error(self):
-        """Test empty DataFrame raises ValueError."""
+    def test_edge_cases(self):
+        """Test edge cases: empty DataFrame, single record, and initialization from file."""
+        # Empty DataFrame raises error
         empty_df = pd.DataFrame(columns=['order_id', 'date', 'customer_id', 'customer_name',
                                          'product_id', 'product_name', 'category', 'quantity',
                                          'unit_price', 'discount', 'region', 'payment_method'])
         with self.assertRaises(ValueError):
             SalesAnalyzer(empty_df)
-
-    def test_single_record_dataframe(self):
-        """Test analyzer works with single record."""
+        
+        # Single record works
         single_df = pd.DataFrame({
             'order_id': [1], 'date': pd.to_datetime(['2024-01-01']),
             'customer_id': ['C1'], 'customer_name': ['A'], 'product_id': ['P1'],
