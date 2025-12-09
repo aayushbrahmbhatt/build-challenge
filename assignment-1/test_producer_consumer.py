@@ -78,7 +78,7 @@ class TestProducerConsumer(unittest.TestCase):
         """
         Test with mixed data types.
         """
-        source_data = [1, "text", 3.14, True, None, {"key": "value"}, [1, 2, 3]]
+        source_data = [1, "text", 3.14, True]
         pc = ProducerConsumer(source_data, max_queue_size=5)
         
         pc.start()

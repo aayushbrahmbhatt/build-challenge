@@ -5,8 +5,6 @@ Report Generator Module
 This module provides the ReportGenerator class for creating formatted
 console output and PDF reports of sales analysis results.
 
-Author: [Your Name]
-Date: December 2024
 """
 
 import pandas as pd

@@ -30,8 +30,6 @@ Pandas API Features Demonstrated:
 - Series.map() - Element-wise transformation
 - Series.nlargest() - Get top N values
 
-Author: [Your Name]
-Date: December 2024
 """
 
 import pandas as pd

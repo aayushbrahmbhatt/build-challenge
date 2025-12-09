@@ -11,10 +11,6 @@ Design Decisions:
 1. Uses composition over inheritance with pandas Series for data storage
 2. Provides computed properties for derived values (gross_amount, net_amount)
 3. Immutable design - properties are read-only
-4. Type hints for better code documentation and IDE support
-
-Author: [Your Name]
-Date: December 2024
 """
 
 from dataclasses import dataclass

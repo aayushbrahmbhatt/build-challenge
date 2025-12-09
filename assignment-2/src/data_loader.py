@@ -20,8 +20,6 @@ Key Features:
 - Data validation and integrity checks
 - Support for custom column mappings
 
-Author: [Your Name]
-Date: December 2024
 """
 
 import pandas as pd
